@@ -14,8 +14,6 @@ from typing import List, Union
 from pathlib import Path
 import re
 
-arrows = ['<--','<->','-->','<==','<=>','==>']
-
 class Harness:
 
     def __init__(self):
@@ -35,12 +33,7 @@ class Harness:
         self.cables[name] = Cable(name, *args, **kwargs)
 
     def add_mate_pin(self, *args, **kwargs) -> None:
-        mate = MatePin(*args, **kwargs)
-        self.mates_pin.append(mate)
-        self.connectors[mate.from_name].activate_pin(mate.from_port)
-        self.connectors[mate.from_name].ports_right = True
-        self.connectors[mate.to_name].activate_pin(mate.to_port)
-        self.connectors[mate.to_name].ports_left = True
+        self.mates_pin.append(MatePin(*args, **kwargs))
 
     def add_mate_component(self, *args, **kwargs) -> None:
         self.mates_component.append(MateComponent(*args, **kwargs))
@@ -71,20 +64,7 @@ class Harness:
                 if not pin in connector.pins:
                     raise Exception(f'{name}:{pin} not found.')
 
-        if via_name in arrows:
-            if '-' in via_name:
-                self.mates[(from_name, from_pin, to_name, to_pin)] = via_name
-            elif '=' in via_name:
-                self.mates[(from_name, to_name)] = via_name
-            print(self.mates)
-        else:
-            self.cables[via_name].connect(from_name, from_pin, via_pin, to_name, to_pin)
-            # if from_name in self.connectors:  # not needed
-        # self.connectors[from_name].activate_pin(from_pin)
-        # self.connectors[from_name].ports_right = True
-        #     # if to_name in self.connectors:  # not needed
-        # self.connectors[to_name].activate_pin(to_pin)
-        # self.connectors[to_name].ports_left = True
+        self.cables[via_name].connect(from_name, from_pin, via_pin, to_name, to_pin)
 
     def create_graph(self) -> Graph:
         dot = Graph()
