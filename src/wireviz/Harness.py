@@ -7,15 +7,16 @@ from typing import List, Union
 from pathlib import Path
 import re
 
-from wireviz import wv_colors, wv_helper, __version__, APP_NAME, APP_URL
+from wireviz import wv_colors, __version__, APP_NAME, APP_URL
 from wireviz.DataClasses import Connector, Cable
 from wireviz.wv_colors import get_color_hex
 from wireviz.wv_gv_html import nested_html_table, html_colorbar, html_image, \
-    html_caption, remove_links, html_line_breaks, clean_whitespace
+    html_caption, remove_links, html_line_breaks
 from wireviz.wv_bom import manufacturer_info_field, component_table_entry, \
-    get_additional_component_table, bom_list
+    get_additional_component_table, bom_list, generate_bom
+from wireviz.wv_html import generate_html_output
 from wireviz.wv_helper import awg_equiv, mm2_equiv, tuplelist2tsv, flatten2d, \
-    index_if_list, open_file_read, open_file_write
+    open_file_read, open_file_write
 
 
 class Harness:
@@ -105,7 +106,7 @@ class Harness:
                     '<!-- connector table -->' if connector.style != 'simple' else None,
                     [html_image(connector.image)],
                     [html_caption(connector.image)]]
-            rows.extend(get_additional_component_table(connector, self.mini_bom_mode))
+            rows.extend(get_additional_component_table(self, connector))
             rows.append([html_line_breaks(connector.notes)])
             html.extend(nested_html_table(rows))
 
@@ -180,7 +181,7 @@ class Harness:
                     [html_image(cable.image)],
                     [html_caption(cable.image)]]
 
-            rows.extend(get_additional_component_table(cable, self.mini_bom_mode))
+            rows.extend(get_additional_component_table(self, cable))
             rows.append([html_line_breaks(cable.notes)])
             html.extend(nested_html_table(rows))
 
@@ -298,8 +299,13 @@ class Harness:
             graph.render(filename=filename, view=view, cleanup=cleanup)
         graph.save(filename=f'{filename}.gv')
         # bom output
-        bomlist = bom_list(self.bom)
+        bomlist = bom_list(self._bom)
         with open_file_write(f'{filename}.bom.tsv') as file:
             file.write(tuplelist2tsv(bomlist))
         # HTML output
         generate_html_output(filename, bomlist)
+
+    def bom(self):
+        if not self._bom:
+            self._bom = generate_bom(self)
+        return self._bom

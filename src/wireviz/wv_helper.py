@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from wireviz import wv_colors
 from typing import List
 import re
+
+from wireviz.wv_gv_html import remove_links
 
 awg_equiv_table = {
     '0.09': '28',
@@ -87,10 +88,6 @@ def tuplelist2tsv(inp, header=None):
     for row in inp:
         output = output + '\t'.join(str(remove_links(item)) for item in row) + '\n'
     return output
-
-# Return the value indexed if it is a list, or simply the value otherwise.
-def index_if_list(value, index):
-    return value[index] if isinstance(value, list) else value
 
 def open_file_read(filename):
     # TODO: Intelligently determine encoding

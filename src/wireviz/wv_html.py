@@ -1,4 +1,11 @@
-from wireviz.wv_helper import flatten2d
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from pathlib import Path
+import re
+
+from wireviz import __version__, APP_NAME, APP_URL
+from wireviz.wv_helper import flatten2d, open_file_read, open_file_write
 
 def generate_html_output(filename: (str, Path), bom_list):
     with open_file_write(f'{filename}.html') as file:

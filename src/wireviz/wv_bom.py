@@ -1,22 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from typing import List, Union
+from collections import Counter
 
-from wireviz.Harness import Harness
 from wireviz.DataClasses import Connector, Cable
+from wireviz.wv_gv_html import html_line_breaks
 
-def get_additional_component_table(component: Union[Connector, Cable], mini_bom_mode) -> List[str]:
+def get_additional_component_table(harness, component: Union[Connector, Cable]) -> List[str]:
     rows = []
     if component.additional_components:
         rows.append(["Additional components"])
         for extra in component.additional_components:
             qty = extra.qty * component.get_qty_multiplier(extra.qty_multiplier)
-            if mini_bom_mode:
-                id = self.get_bom_index(extra.description, extra.unit, extra.manufacturer, extra.mpn, extra.pn)
+            if harness.mini_bom_mode:
+                id = get_bom_index(harness, extra.description, extra.unit, extra.manufacturer, extra.mpn, extra.pn)
                 rows.append(component_table_entry(f'#{id} ({extra.type.rstrip()})', qty, extra.unit))
             else:
                 rows.append(component_table_entry(extra.description, qty, extra.unit, extra.pn, extra.manufacturer, extra.mpn))
     return(rows)
 
-def get_additional_component_bom(self, component: Union[Connector, Cable]) -> List[dict]:
+def get_additional_component_bom(component: Union[Connector, Cable]) -> List[dict]:
     bom_entries = []
     for part in component.additional_components:
         qty = part.qty * component.get_qty_multiplier(part.qty_multiplier)
@@ -31,12 +35,9 @@ def get_additional_component_bom(self, component: Union[Connector, Cable]) -> Li
         })
     return(bom_entries)
 
-def bom(harness: Harness):
-    # if the bom has previously been generated then return the generated bom
-    if harness._bom:
-        return harness._bom
+def generate_bom(harness):
+    from wireviz.Harness import Harness  # Local import to avoid circular imports
     bom_entries = []
-
     # connectors
     for connector in harness.connectors.values():
         if not connector.ignore_in_bom:
@@ -51,7 +52,7 @@ def bom(harness: Harness):
             })
 
         # add connectors aditional components to bom
-        bom_entries.extend(harness.get_additional_component_bom(connector))
+        bom_entries.extend(get_additional_component_bom(connector))
 
     # cables
     # TODO: If category can have other non-empty values than 'bundle', maybe it should be part of item name?
@@ -82,7 +83,7 @@ def bom(harness: Harness):
                     })
 
         # add cable/bundles aditional components to bom
-        bom_entries.extend(harness.get_additional_component_bom(cable))
+        bom_entries.extend(get_additional_component_bom(cable))
 
     for item in harness.additional_bom_items:
         bom_entries.append({
@@ -94,6 +95,7 @@ def bom(harness: Harness):
     bom_entries = [{k: clean_whitespace(v) for k, v in entry.items()} for entry in bom_entries]
 
     # deduplicate bom
+    bom = []
     bom_types_group = lambda bt: (bt['item'], bt['unit'], bt['manufacturer'], bt['mpn'], bt['pn'])
     for group in Counter([bom_types_group(v) for v in bom_entries]):
         group_entries = [v for v in bom_entries if bom_types_group(v) == group]
@@ -107,18 +109,18 @@ def bom(harness: Harness):
         designators = list(dict.fromkeys(designators))  # remove duplicates
         designators.sort()
         total_qty = sum(entry['qty'] for entry in group_entries)
-        harness._bom.append({**group_entries[0], 'qty': round(total_qty, 3), 'designators': designators})
+        bom.append({**group_entries[0], 'qty': round(total_qty, 3), 'designators': designators})
 
-    harness._bom = sorted(harness._bom, key=lambda k: k['item'])  # sort list of dicts by their values (https://stackoverflow.com/a/73050)
+    bom = sorted(harness._bom, key=lambda k: k['item'])  # sort list of dicts by their values (https://stackoverflow.com/a/73050)
 
     # add an incrementing id to each bom item
-    harness._bom = [{**entry, 'id': index} for index, entry in enumerate(harness._bom, 1)]
-    return self._bom
+    bom = [{**entry, 'id': index} for index, entry in enumerate(bom, 1)]
+    return bom
 
 def get_bom_index(harness, item, unit, manufacturer, mpn, pn):
     # Remove linebreaks and clean whitespace of values in search
     target = tuple(clean_whitespace(v) for v in (item, unit, manufacturer, mpn, pn))
-    for entry in self.bom():
+    for entry in harness.bom():
         if (entry['item'], entry['unit'], entry['manufacturer'], entry['mpn'], entry['pn']) == target:
             return entry['id']
     return None
@@ -169,3 +171,10 @@ def manufacturer_info_field(manufacturer, mpn):
         return f'{manufacturer if manufacturer else "MPN"}{": " + str(mpn) if mpn else ""}'
     else:
         return None
+
+def clean_whitespace(inp):
+    return ' '.join(inp.split()).replace(' ,', ',') if isinstance(inp, str) else inp
+
+# Return the value indexed if it is a list, or simply the value otherwise.
+def index_if_list(value, index):
+    return value[index] if isinstance(value, list) else value

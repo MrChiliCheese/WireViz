@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from typing import List, Union
 import re
 
 from wireviz.wv_colors import translate_color
-from wireviz.DataClasses import Image
 
 def nested_html_table(rows):
     # input: list, each item may be scalar or list
@@ -33,6 +35,7 @@ def html_colorbar(color):
     return f'<tdX bgcolor="{translate_color(color, "HEX")}" width="4">' if color else None
 
 def html_image(image):
+    from wireviz.DataClasses import Image
     if not image:
         return None
     # The leading attributes belong to the preceeding tag. See where used below.
@@ -48,9 +51,11 @@ def html_image(image):
     return f'''<tdX{' sides="TLR"' if image.caption else ''}{html}'''
 
 def html_caption(image):
+    from wireviz.DataClasses import Image
     return f'<tdX sides="BLR">{html_line_breaks(image.caption)}' if image and image.caption else None
 
 def html_size_attr(image):
+    from wireviz.DataClasses import Image
     # Return Graphviz HTML attributes to specify minimum or fixed size of a TABLE or TD object
     return ((f' width="{image.width}"'   if image.width else '')
         +   (f' height="{image.height}"' if image.height else '')
@@ -61,6 +66,3 @@ def remove_links(inp):
 
 def html_line_breaks(inp):
     return remove_links(inp).replace('\n', '<br />') if isinstance(inp, str) else inp
-
-def clean_whitespace(inp):
-    return ' '.join(inp.split()).replace(' ,', ',') if isinstance(inp, str) else inp
