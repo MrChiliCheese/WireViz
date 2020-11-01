@@ -299,7 +299,7 @@ class Harness:
             graph.render(filename=filename, view=view, cleanup=cleanup)
         graph.save(filename=f'{filename}.gv')
         # bom output
-        bomlist = bom_list(self._bom)
+        bomlist = bom_list(self.bom())
         with open_file_write(f'{filename}.bom.tsv') as file:
             file.write(tuplelist2tsv(bomlist))
         # HTML output
