@@ -6,6 +6,7 @@ from collections import Counter
 
 from wireviz.DataClasses import Connector, Cable
 from wireviz.wv_gv_html import html_line_breaks
+from wireviz.wv_helper import clean_whitespace
 
 def get_additional_component_table(harness, component: Union[Connector, Cable]) -> List[str]:
     rows = []
@@ -171,9 +172,6 @@ def manufacturer_info_field(manufacturer, mpn):
         return f'{manufacturer if manufacturer else "MPN"}{": " + str(mpn) if mpn else ""}'
     else:
         return None
-
-def clean_whitespace(inp):
-    return ' '.join(inp.split()).replace(' ,', ',') if isinstance(inp, str) else inp
 
 # Return the value indexed if it is a list, or simply the value otherwise.
 def index_if_list(value, index):

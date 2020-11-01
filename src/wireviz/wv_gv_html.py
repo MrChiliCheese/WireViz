@@ -5,6 +5,7 @@ from typing import List, Union
 import re
 
 from wireviz.wv_colors import translate_color
+from wireviz.wv_helper import remove_links
 
 def nested_html_table(rows):
     # input: list, each item may be scalar or list
@@ -60,9 +61,6 @@ def html_size_attr(image):
     return ((f' width="{image.width}"'   if image.width else '')
         +   (f' height="{image.height}"' if image.height else '')
         +   ( ' fixedsize="true"'        if image.fixedsize else '')) if image else ''
-
-def remove_links(inp):
-    return re.sub(r'<[aA] [^>]*>([^<]*)</[aA]>', r'\1', inp) if isinstance(inp, str) else inp
 
 def html_line_breaks(inp):
     return remove_links(inp).replace('\n', '<br />') if isinstance(inp, str) else inp

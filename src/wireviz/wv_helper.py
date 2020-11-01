@@ -4,8 +4,6 @@
 from typing import List
 import re
 
-from wireviz.wv_gv_html import remove_links
-
 awg_equiv_table = {
     '0.09': '28',
     '0.14': '26',
@@ -88,6 +86,15 @@ def tuplelist2tsv(inp, header=None):
     for row in inp:
         output = output + '\t'.join(str(remove_links(item)) for item in row) + '\n'
     return output
+
+
+def remove_links(inp):
+    return re.sub(r'<[aA] [^>]*>([^<]*)</[aA]>', r'\1', inp) if isinstance(inp, str) else inp
+
+
+def clean_whitespace(inp):
+    return ' '.join(inp.split()).replace(' ,', ',') if isinstance(inp, str) else inp
+
 
 def open_file_read(filename):
     # TODO: Intelligently determine encoding
