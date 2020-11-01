@@ -111,7 +111,7 @@ def generate_bom(harness):
         total_qty = sum(entry['qty'] for entry in group_entries)
         bom.append({**group_entries[0], 'qty': round(total_qty, 3), 'designators': designators})
 
-    bom = sorted(harness._bom, key=lambda k: k['item'])  # sort list of dicts by their values (https://stackoverflow.com/a/73050)
+    bom = sorted(bom, key=lambda k: k['item'])  # sort list of dicts by their values (https://stackoverflow.com/a/73050)
 
     # add an incrementing id to each bom item
     bom = [{**entry, 'id': index} for index, entry in enumerate(bom, 1)]
