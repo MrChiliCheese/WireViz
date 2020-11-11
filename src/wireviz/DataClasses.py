@@ -256,16 +256,15 @@ class Cable:
                 self.additional_components[i] = AdditionalComponent(**item)
 
     # The *_pin arguments accept a tuple, but it seems not in use with the current code.
-    def connect(self, from_name: Optional[Designator], from_pin: NoneOrMorePins, via_pin: OneOrMoreWires,
+    def connect(self, from_name: Optional[Designator], from_pin: NoneOrMorePins, via_wire: OneOrMoreWires,
                 to_name: Optional[Designator], to_pin: NoneOrMorePins) -> None:
         from_pin = int2tuple(from_pin)
-        via_pin = int2tuple(via_pin)
+        via_wire = int2tuple(via_wire)
         to_pin = int2tuple(to_pin)
         if len(from_pin) != len(to_pin):
             raise Exception('from_pin must have the same number of elements as to_pin')
         for i, _ in enumerate(from_pin):
-            # self.connections.append((from_name, from_pin[i], via_pin[i], to_name, to_pin[i]))
-            self.connections.append(Connection(from_name, from_pin[i], via_pin[i], to_name, to_pin[i]))
+            self.connections.append(Connection(from_name, from_pin[i], via_wire[i], to_name, to_pin[i]))
 
     def get_qty_multiplier(self, qty_multiplier: Optional[CableMultiplier]) -> float:
         if not qty_multiplier:

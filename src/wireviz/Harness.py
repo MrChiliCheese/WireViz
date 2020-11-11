@@ -34,8 +34,9 @@ class Harness:
     def add_bom_item(self, item: dict) -> None:
         self.additional_bom_items.append(item)
 
-    def connect(self, from_name: str, from_pin: (int, str), via_name: str, via_pin: (int, str), to_name: str, to_pin: (int, str)) -> None:
-        for (name, pin) in zip([from_name, to_name], [from_pin, to_pin]):  # check from and to connectors
+    def connect(self, from_name: str, from_pin: (int, str), via_name: str, via_wire: (int, str), to_name: str, to_pin: (int, str)) -> None:
+        # check from and to connectors
+        for (name, pin) in zip([from_name, to_name], [from_pin, to_pin]):
             if name is not None and name in self.connectors:
                 connector = self.connectors[name]
                 if pin in connector.pins and pin in connector.pinlabels:
@@ -57,7 +58,7 @@ class Harness:
                 if not pin in connector.pins:
                     raise Exception(f'{name}:{pin} not found.')
 
-        self.cables[via_name].connect(from_name, from_pin, via_pin, to_name, to_pin)
+        self.cables[via_name].connect(from_name, from_pin, via_wire, to_name, to_pin)
         if from_name in self.connectors:
             self.connectors[from_name].activate_pin(from_pin)
         if to_name in self.connectors:
