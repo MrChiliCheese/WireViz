@@ -242,6 +242,10 @@ class Cable:
                 raise Exception('Unknown number of wires. Must specify wirecount or colors (implicit length)')
             self.wirecount = len(self.colors)
 
+        if self.wirelabels:
+            if self.shield and 's' in self.wirelabels:
+                raise Exception('"s" may not be used as a wire label for a shielded cable.')
+
         # if lists of part numbers are provided check this is a bundle and that it matches the wirecount.
         for idfield in [self.manufacturer, self.mpn, self.pn]:
             if isinstance(idfield, list):
