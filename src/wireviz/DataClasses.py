@@ -189,6 +189,7 @@ class Cable:
     image: Optional[Image] = None
     notes: Optional[MultilineHypertext] = None
     colors: List[Colors] = field(default_factory=list)
+    wirelabels: List[Colors] = field(default_factory=list)
     color_code: Optional[ColorScheme] = None
     show_name: bool = True
     show_wirecount: bool = True

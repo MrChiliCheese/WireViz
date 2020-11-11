@@ -39,24 +39,39 @@ class Harness:
         for (name, pin) in zip([from_name, to_name], [from_pin, to_pin]):
             if name is not None and name in self.connectors:
                 connector = self.connectors[name]
+                # check if provided name is ambiguous
                 if pin in connector.pins and pin in connector.pinlabels:
-                    if connector.pins.index(pin) == connector.pinlabels.index(pin):
-                        # TODO: Maybe issue a warning? It's not worthy of an exception if it's unambiguous, but maybe risky?
-                        pass
-                    else:
+                    if connector.pins.index(pin) != connector.pinlabels.index(pin):
                         raise Exception(f'{name}:{pin} is defined both in pinlabels and pins, for different pins.')
+                    # TODO: Maybe issue a warning if present in both lists but referencing the same pin?
                 if pin in connector.pinlabels:
                     if connector.pinlabels.count(pin) > 1:
                         raise Exception(f'{name}:{pin} is defined more than once.')
-                    else:
-                        index = connector.pinlabels.index(pin)
-                        pin = connector.pins[index] # map pin name to pin number
-                        if name == from_name:
-                            from_pin = pin
-                        if name == to_name:
-                            to_pin = pin
+                    index = connector.pinlabels.index(pin)
+                    pin = connector.pins[index] # map pin name to pin number
+                    if name == from_name:
+                        from_pin = pin
+                    if name == to_name:
+                        to_pin = pin
                 if not pin in connector.pins:
                     raise Exception(f'{name}:{pin} not found.')
+
+        # check via cable
+        if via_name in self.cables:
+            cable = self.cables[via_name]
+            # check if provided name is ambiguous
+            if via_wire in cable.colors and via_wire in cable.wirelabels:
+                if cable.colors.index(via_wire) != cable.wirelabels.index(via_wire):
+                    raise Exception(f'{via_name}:{via_wire} is defined both in colors and wirelabels, for different wires.')
+                # TODO: Maybe issue a warning if present in both lists but referencing the same wire?
+            if via_wire in cable.colors:
+                if cable.colors.count(via_wire) > 1:
+                    raise Exception(f'{via_name}:{via_wire} is used for more than one wire.')
+                via_wire = cable.colors.index(via_wire) + 1  # list index starts at 0, wire IDs start at 1
+            elif via_wire in cable.wirelabels:
+                if cable.wirelabels.count(via_wire) > 1:
+                    raise Exception(f'{via_name}:{via_wire} is used for more than one wire.')
+                via_wire = cable.wirelabels.index(via_wire) + 1  # list index starts at 0, wire IDs start at 1
 
         self.cables[via_name].connect(from_name, from_pin, via_wire, to_name, to_pin)
         if from_name in self.connectors:
