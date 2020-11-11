@@ -193,6 +193,7 @@ class Cable:
     color_code: Optional[ColorScheme] = None
     show_name: bool = True
     show_wirecount: bool = True
+    show_wirenumbers: Optional[bool] = None
     ignore_in_bom: bool = False
     additional_components: List[AdditionalComponent] = field(default_factory=list)
 
@@ -255,6 +256,10 @@ class Cable:
                         raise Exception('lists of part data must match wirecount')
                 else:
                     raise Exception('lists of part data are only supported for bundles')
+
+        # by default, show wire numbers for cables, hide for bundles
+        if not self.show_wirenumbers:
+            self.show_wirenumbers = self.category != 'bundle'
 
         for i, item in enumerate(self.additional_components):
             if isinstance(item, dict):
