@@ -12,6 +12,7 @@ from wireviz.wv_helper import awg_equiv, mm2_equiv, tuplelist2tsv, \
 from collections import Counter
 from typing import List, Union
 from pathlib import Path
+from itertools import zip_longest
 import re
 
 
@@ -201,19 +202,23 @@ class Harness:
             wirehtml.append('<table border="0" cellspacing="0" cellborder="0">')  # conductor table
             wirehtml.append('   <tr><td>&nbsp;</td></tr>')
 
-            for i, connection_color in enumerate(cable.colors, 1):
+            colspan = 4 if cable.wirelabels else 3
+
+            for i, (connection_color, wirelabel) in enumerate(zip_longest(cable.colors, cable.wirelabels), 1):
                 wirehtml.append('   <tr>')
                 wirehtml.append(f'    <td><!-- {i}_in --></td>')
                 wirehtml.append(f'    <td>{wv_colors.translate_color(connection_color, self.color_mode)}</td>')
+                if cable.wirelabels:
+                    wirehtml.append(f'    <td>[{wirelabel}]</td>')
                 wirehtml.append(f'    <td><!-- {i}_out --></td>')
                 wirehtml.append('   </tr>')
 
                 bgcolors = ['#000000'] + get_color_hex(connection_color, pad=pad) + ['#000000']
                 wirehtml.append(f'   <tr>')
-                wirehtml.append(f'    <td colspan="3" border="0" cellspacing="0" cellpadding="0" port="w{i}" height="{(2 * len(bgcolors))}">')
+                wirehtml.append(f'    <td colspan="{colspan}" border="0" cellspacing="0" cellpadding="0" port="w{i}" height="{(2 * len(bgcolors))}">')
                 wirehtml.append('     <table cellspacing="0" cellborder="0" border="0">')
                 for j, bgcolor in enumerate(bgcolors[::-1]):  # Reverse to match the curved wires when more than 2 colors
-                    wirehtml.append(f'      <tr><td colspan="3" cellpadding="0" height="2" bgcolor="{bgcolor if bgcolor != "" else wv_colors.default_color}" border="0"></td></tr>')
+                    wirehtml.append(f'      <tr><td colspan="{colspan}" cellpadding="0" height="2" bgcolor="{bgcolor if bgcolor != "" else wv_colors.default_color}" border="0"></td></tr>')
                 wirehtml.append('     </table>')
                 wirehtml.append('    </td>')
                 wirehtml.append('   </tr>')
@@ -229,7 +234,7 @@ class Harness:
                         wireidentification.append(html_line_breaks(manufacturer_info))
                     # print parameters into a table row under the wire
                     if len(wireidentification) > 0 :
-                        wirehtml.append('   <tr><td colspan="3">')
+                        wirehtml.append('   <tr><td colspan="{colspan}">')
                         wirehtml.append('    <table border="0" cellspacing="0" cellborder="0"><tr>')
                         for attrib in wireidentification:
                             wirehtml.append(f'     <td>{attrib}</td>')
@@ -250,7 +255,7 @@ class Harness:
                 else:
                     # shield is shown as a thin black wire
                     attributes = f'height="2" bgcolor="#000000" border="0"'
-                wirehtml.append(f'   <tr><td colspan="3" cellpadding="0" {attributes} port="ws"></td></tr>')
+                wirehtml.append(f'   <tr><td colspan="{colspan}" cellpadding="0" {attributes} port="ws"></td></tr>')
 
             wirehtml.append('   <tr><td>&nbsp;</td></tr>')
             wirehtml.append('  </table>')
