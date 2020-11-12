@@ -214,7 +214,7 @@ class Harness:
                 if colorstr:
                     wireinfo.append(colorstr)
                 if cable.wirelabels:
-                    wireinfo.append(wirelabel if wirelabel else '')
+                    wireinfo.append(wirelabel if wirelabel is not None else '')
                 wirehtml.append(f'     {":".join(wireinfo)}')
 
                 wirehtml.append(f'    </td>')
